@@ -1,9 +1,11 @@
-
+#coding=utf-8
 from scrapy.spiders import CrawlSpider
 
 from dianping.items import FoodieItem
 from scrapy.selector import Selector
 from scrapy.http import Request
+
+
 
 import sys
 import random
@@ -17,6 +19,7 @@ class DianpingSpider(CrawlSpider):
 
     start_urls=[
         'http://www.dianping.com/memberlist/0/0'
+        #'http://www.dianping.com/memberlist/1/0' # 1 上海, 2 北京, 3 杭州
 
     ]
 
@@ -26,6 +29,12 @@ class DianpingSpider(CrawlSpider):
         selector = Selector(response)
 
         infos = selector.xpath('//tr')
+
+        headers = {
+            'user-agent':'Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; TencentTraveler 4.0)'
+
+        }
+
 
         for info in infos:
             nickname = info.xpath('td[1]/a/text()').extract()
@@ -42,15 +51,17 @@ class DianpingSpider(CrawlSpider):
                 cmt_response = comment_response[0]
                 fl =  flower[0]
 
+                print name
+
                 print detailurl
 
 
                 yield Request(detailurl,callback=self.parse_details,meta={'nickname':name,'cmt_first':cmt_first,'cmt_response':cmt_response,'fl':fl})
 
 
-        ###分页
+
         for p in range(2,7):
-            url='http://www.dianping.com/memberlist/3/0?pg=%s'%p
+            url='http://www.dianping.com/memberlist/0/0?pg=%s'%p
 
             yield Request(url,callback=self.parse)
 
@@ -167,6 +178,7 @@ class DianpingSpider(CrawlSpider):
         for tag in tags:
 
             atag += tag +'\n'
-        foodItem['tags'] = loc
+        foodItem['tags'] = atag
+
 
         yield foodItem
